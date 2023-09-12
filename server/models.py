@@ -1,7 +1,11 @@
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import validates
+
+
+db = SQLAlchemy()
 
 class Game(db.Model, SerializerMixin):
     __tablename__ = 'games'
@@ -11,6 +15,10 @@ class Game(db.Model, SerializerMixin):
     user_high_score = db.Column(db.Integer)
     user_score = db.Column(db.Integer)
 
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    users = db.relationship('User', back_populates='games')
+
 
 
 class User(db.Model, SerializerMixin):
@@ -18,11 +26,13 @@ class User(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
+    user_password = db.Column(db.String)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     user_history = db.Column(db.String)
 
     predictions = db.relationship('Prediction', secondary='user_predictions', back_populates='users')
+    games = db.relationship('Game', back_populates='user')
 
 
 class Prediction(db.Model, SerializerMixin):
@@ -52,5 +62,3 @@ class UserPrediction(db.Model, SerializerMixin):
 
 
 
-
-from config import db, bcrypt

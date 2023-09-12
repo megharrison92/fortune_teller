@@ -10,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 
-
+from models import db
 # Local imports
 
 
@@ -25,13 +25,13 @@ app.json.compact = False
 metadata = MetaData(naming_convention={
 "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
 })
-db = SQLAlchemy(metadata=metadata)
+#db = SQLAlchemy(metadata=metadata)
 migrate = Migrate(app, db)
-db.init_app(app)
 
+api = Api(app)
 
 # Instantiate REST API
-api = Api(app)
+db.init_app(app)
 
 
 # Instantiate CORS
