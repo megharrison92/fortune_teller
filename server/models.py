@@ -15,9 +15,9 @@ class Game(db.Model, SerializerMixin):
     user_high_score = db.Column(db.Integer)
     user_score = db.Column(db.Integer)
 
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', back_populates = 'games')
    
-
-
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -28,6 +28,8 @@ class User(db.Model, SerializerMixin):
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     user_history = db.Column(db.String)
+
+    games = db.relationship('Game', back_populates = 'user')
 
     comments = db.relationship('Comment', back_populates = 'user')
     predictions = association_proxy('comments', 'prediction')
