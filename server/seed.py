@@ -6,7 +6,7 @@ from faker import Faker
 
 # Local imports
 from app import app
-from models import db, Game, User, Prediction, UserPrediction
+from models import db, Game, User, Prediction, Comment
 
 fake = Faker()
 

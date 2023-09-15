@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 # Local imports
 from config import app, api
 # Add your model imports
-from models import User, Prediction, Game, UserPrediction
+from models import User, Prediction, Game, Comment
 
 #should the secret key go here?
 
