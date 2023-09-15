@@ -11,6 +11,7 @@ from models import db, Game, User, Prediction, Comment
 fake = Faker()
 
 def create_users(num_users):
+    users = []
     for i in range(num_users):
         user = User(
             username = fake.user_name(),
@@ -19,44 +20,61 @@ def create_users(num_users):
             last_name = fake.last_name(),
             user_history = fake.text()
         )
-        db.session.add(user)
+        users.append(user)
+    db.session.add_all(users)
+    db.session.commit()
 
 def create_predictions(num_predictions, users):
+    predictions = []
     for i in range(num_predictions):
         prediction = Prediction(
-            content = fake.sentence(),
-            date_created = fake.date_time_this_decade()
+            content = fake.text(),
+            date_created = fake.date_time_this_decade().timestamp()
         )
-        random_user = random.choice(users)
-        prediction.users.append(random_user)
-        db.session.add(prediction)
+        user = random.choice(users)
+        comment = Comment(user=user, prediction=prediction)
+        predictions.append(prediction)
+    db.session.add_all(predictions)
+    db.session.commit()
 
-def create_games(num_games, users):
-    for i in range(num_games):
-        game = Game(
-            num_games_played = fake.random_int(1, 100),
-            user_high_score = fake.random_int(100, 100000000),
-            user_score = fake.random_int(1, 25000),
-            users = [random.choice(users)]
+def create_comments(num_comments, predictions, users):
+    comments = []
+    for i in range(num_comments):
+        comment = Comment(
+            comment = fake.text(),
+            like =randint(1,100)
         )
-        random_user = random.choice(users)
-        game.users = random_user
-        db.session.add(game)
+        user = random.choice(users)
+        prediciton = random.choice(predictions)
+        comment.user = user
+        comment.prediction = prediciton
+        comments.append(comment)
+    db.session.add_all(comments)
+    db.session.commit()
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         num_users = 10
         num_predictions = 20
-        num_games = 30
+        num_comments = 30
 
+        print("Clearing db...")
+        Comment.query.delete()
+        Prediction.query.delete()
+        User.query.delete()
+
+        print("Seeding users...")
         create_users(num_users)
-        db.session.commit()
 
         users = User.query.all()
 
+        print("Seeding predictions...")
         create_predictions(num_predictions, users)
-        db.session.commit()
 
-        create_games(num_games, users)
-        db.session.commit()
+        predictions = Prediction.query.all()
+
+        print("Seeding comments...")
+        create_comments(num_comments, predictions, users)
+
+        print("Done seeding!")
