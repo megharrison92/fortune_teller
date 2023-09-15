@@ -15,9 +15,7 @@ class Game(db.Model, SerializerMixin):
     user_high_score = db.Column(db.Integer)
     user_score = db.Column(db.Integer)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    users = db.relationship('User', back_populates='games')
+   
 
 
 
@@ -31,8 +29,10 @@ class User(db.Model, SerializerMixin):
     last_name = db.Column(db.String)
     user_history = db.Column(db.String)
 
-    predictions = db.relationship('Prediction', secondary='user_predictions', back_populates='users')
-    games = db.relationship('Game', back_populates='user')
+    comments = db.relationship('Comment', back_populates = 'user')
+    predictions = association_proxy('comments', 'prediction')
+
+    serialize_rules = ('-comments.user',)
 
 
 class Prediction(db.Model, SerializerMixin):
@@ -42,23 +42,23 @@ class Prediction(db.Model, SerializerMixin):
     content = db.Column(db.String)
     date_created = db.Column(db.Integer)
 
-    users = db.relationship('User', secondary='user_predictions', back_populates='predictions')
+    comments = db.relationship('Comment', back_populates = 'prediction')
+    users = association_proxy('comments', 'user')
+
+    serialize_rules = ('-comments.prediction',)
 
 
-
-
-
-class UserPrediction(db.Model, SerializerMixin):
-    __tablename__ = 'user_predictions'
+class Comment(db.Model, SerializerMixin):
+    __tablename__ = 'comments'
 
     id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.String)
+    like = db.Column(db.Integer)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     prediction_id = db.Column(db.Integer, db.ForeignKey('predictions.id'))
 
-    user = db.relationship('User', back_populates='predictions')
-    prediction = db.relationship('Prediction', back_populates='users')
+    user = db.relationship('User', back_populates = 'comments' )
+    prediction = db.relationship('Prediction', back_populates = 'comments' )
 
-
-
-
+    serialize_rules = ('-user.comments', '-prediction.comments',)
