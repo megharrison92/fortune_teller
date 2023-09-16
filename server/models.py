@@ -17,6 +17,9 @@ class Game(db.Model, SerializerMixin):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', back_populates = 'games')
+
+    def __repr__(self):
+        return f'<Game id = {self.id} >'
    
 
 class User(db.Model, SerializerMixin):
@@ -36,6 +39,17 @@ class User(db.Model, SerializerMixin):
 
     serialize_rules = ('-comments.user',)
 
+    @validates('username')
+    def validate_username(self, key, username):
+        if not username or len(username) < 1:
+            raise ValueError('Username must have a name')
+        return username
+    
+    
+
+    def __repr__(self):
+        return f'<User id = {self.id} username = {self.username} user_password = {self.user_password} first_name = {self.first_name} last_name = {self.last_name} user_history = {self.user_history} >'
+
 
 class Prediction(db.Model, SerializerMixin):
     __tablename__ = 'predictions'
@@ -48,6 +62,9 @@ class Prediction(db.Model, SerializerMixin):
     users = association_proxy('comments', 'user')
 
     serialize_rules = ('-comments.prediction',)
+
+    def __repr__(self):
+        return f'<Prediction id = {self.id} content = {self.content} date_created = {self.date_created}>'
 
 
 class Comment(db.Model, SerializerMixin):
@@ -64,3 +81,6 @@ class Comment(db.Model, SerializerMixin):
     prediction = db.relationship('Prediction', back_populates = 'comments' )
 
     serialize_rules = ('-user.comments', '-prediction.comments',)
+
+    def __repr__(self):
+        return f'<Comment id = {self.id} comment = {self.comment} like = {self.like}>'
