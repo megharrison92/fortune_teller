@@ -42,10 +42,26 @@ class User(db.Model, SerializerMixin):
     @validates('username')
     def validate_username(self, key, username):
         if not username or len(username) < 1:
-            raise ValueError('Username must have a name')
+            raise ValueError('Username must be a string greater than 1 character')
         return username
     
+    @validates('user_password')
+    def validate_password(self, key, user_password):
+        if len(user_password) < 1 or len(user_password) > 26 or not any(char.isdigit() for char in user_password):
+            raise ValueError('Password must be a string between 1 and 26 characters and have at least 1 number or special character')
+        return user_password
     
+    @validates('first_name')
+    def validate_first_name(self, key, first_name):
+        if len(first_name) < 1:
+            raise ValueError('First name must be a string greater than 1 character.')
+        return first_name
+    
+    @validates('last_name')
+    def validate_last_name(self, key, last_name):
+        if len(last_name) < 1:
+            raise ValueError('Last name must be a string greater than 1 character.')
+        return last_name
 
     def __repr__(self):
         return f'<User id = {self.id} username = {self.username} user_password = {self.user_password} first_name = {self.first_name} last_name = {self.last_name} user_history = {self.user_history} >'
@@ -81,6 +97,12 @@ class Comment(db.Model, SerializerMixin):
     prediction = db.relationship('Prediction', back_populates = 'comments' )
 
     serialize_rules = ('-user.comments', '-prediction.comments',)
+
+    @validates('comment')
+    def validate_username(self, key, comment):
+        if not comment or len(comment) < 1:
+            raise ValueError('Username must be a string greater than 1 character')
+        return comment
 
     def __repr__(self):
         return f'<Comment id = {self.id} comment = {self.comment} like = {self.like}>'
