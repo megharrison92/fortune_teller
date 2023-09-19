@@ -131,5 +131,50 @@ class CommentsById(Resource):
     
 api.add_resource( CommentsById, '/comments/<int:id>')
 
+class Games(Resource):
+    def get(self):
+        games = [game.to_dict(rules=()) for game in Game.query.all()]
+        response = make_response(games, 200)
+        return response
+    
+    def post(self):
+        data= request.get_json()
+        new_game = Game(num_games_played=data['num_games_played'], user_high_score=data['user_high_score'], user_score=data['user_score'])
+        db.session.add(new_game)
+        db.session.comit()
+        return make_response(new_game.to_dict(), 200)
+    
+api.add_resource( Games, '/games')
+
+class GamesById(Resource):
+    def get(self, id):
+        game = Game.query.filter( Game.id == id ).first()
+        if game is None:
+            return make_response({'error': 'Game not found'}, 404)
+        return make_response(game.to_dict(), 200)
+    
+    def put(self, id):
+        game = Game.query.filter( Game.id == id ).first()
+        if game is None:
+            return make_response({'error': 'Game not found'}, 404)
+        
+        data = request.get_json()
+        game.num_games_played = data.get('num_games_played', game.num_games_played)
+        game.user_high_score = data.get('user_high_score', game.user_high_score)
+        game.user_score = data.get('user_score', game.user_score)
+        db.session.commit()
+        return make_response(game.to_dict(), 200)
+    
+    def delete(self, id):
+        game = Game.query.filter( Game.id == id ).first()
+        if game is None:
+            return make_response({'error': 'Game not found'}, 404)
+        db.session.delete(game)
+        db.session.commit()
+        return make_response('', 204)
+    
+api.add_resource( GamesById, '/games/<int:id>')
+
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
