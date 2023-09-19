@@ -25,7 +25,68 @@ class Users(Resource):
         db.session.add(new_user)
         db.session.commit()
         return make_response(new_user.to_dict(), 200)
+    
+api.add_resource( Users, '/users' )
 
+class UsersById(Resource):
+    def get(self):
+        user = User.query.filter( User.id == id ).first()
+        if user is None:
+            return make_response({'error': 'User not found'}, 404)
+        return make_response(user.to_dict(), 200)
+    
+    def delete(self, id):
+        user = User.query.filter( User.id == id ).first()
+        if user is None:
+            return make_response({'error': 'User not found'}, 404)
+        db.session.delete(user)
+        db.session.commit()
+        return make_response('', 204)
+    
+api.add_resource( UsersById, '<int:id>')
+
+class Predictions(Resource):
+    def get(self):
+        predictions = [prediction.to_dict(rules=())for prediction in Prediction.query.all()]
+        response = make_response(predictions, 200)
+        return response
+    
+    def post(self):
+        data = request.get_json()
+        new_prediction = Prediction(content=data['content'], date_created=data['date_created'])
+        db.session.add(new_prediction)
+        db.session.commit()
+        return make_response(new_prediction.to_dict(), 200)
+    
+api.add_resource( Predictions, '/predictions')
+
+class PredictionsById(Resource):
+    def get(self, id):
+        prediction = Prediction.query.filter( Prediction.id == id ).first()
+        if prediction is None:
+            return make_response({'error': 'Prediction not found'}, 404)
+        return make_response(prediction.to_dict(), 200)
+    
+    def put(self,id):
+        prediction = Prediction.query.filter( Prediction.id == id ).first()
+        if prediction is None:
+            return make_response({'error': 'Prediction not found'}, 404)
+        
+        data = request.get_json()
+        prediction.content = data.get('content', prediction.content)
+        prediction.date_created = data.get('date_created', prediction.date_created)
+        db.session.commit()
+        return make_response(prediction.to_dict(), 200)
+    
+    def delete(self, id):
+        prediction = Prediction.query.filter( Prediction.id == id ).first()
+        if prediction is None:
+            return make_response({'error': 'Prediction not found'}, 404)
+        db.session.delete(prediction)
+        db.session.commit()
+        return make_response('', 204)
+    
+api.add_resource( PredictionsById, '/predictions/<int:id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
