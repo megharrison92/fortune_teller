@@ -88,5 +88,48 @@ class PredictionsById(Resource):
     
 api.add_resource( PredictionsById, '/predictions/<int:id>')
 
+class Comments(Resource):
+    def get(self):
+        comments = [comment.to_dict(rules=()) for comment in Comment.query.all()]
+        response = make_response(comments, 200)
+        return response
+    
+    def post(self):
+        data = request.get_json()
+        new_comment = Comment(comment=data['comment'], like=data['like'])
+        db.session.add(new_comment)
+        db.session.commit()
+        return make_response(new_comment.to_dict(), 200)
+    
+api.add_resource( Comments, '/comments')
+
+class CommentsById(Resource):
+    def get(self, id):
+        comment = Comment.query.filter( Comment.id == id ).first()
+        if comment is None:
+            return make_response({'error': 'Comment not found'}, 404)
+        return make_response(comment.to_dict(), 200)
+    
+    def put(self, id):
+        comment = Comment.query.filter( Comment.id == id ).first()
+        if comment is None:
+            return make_response({'error': 'Comment not found'}, 404)
+        
+        data = request.get_json()
+        comment.comment = data.get('comment', comment.comment)
+        comment.like = data.get('like', comment.like)
+        db.session.commit()
+        return make_response(comment.to_dict(), 200)
+    
+    def delete(self, id):
+        comment = Comment.query.filter( Comment.id == id ).first()
+        if comment is None:
+            return make_response({'error': 'Comment not found'}, 404)
+        db.session.delete(comment)
+        db.session.commit()
+        return make_response('', 204)
+    
+api.add_resource( CommentsById, '/comments/<int:id>')
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
